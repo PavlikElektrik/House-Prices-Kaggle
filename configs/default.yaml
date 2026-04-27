@@ -1,0 +1,31 @@
+paths:
+  data_dir: data
+  artifact_dir: artifacts
+
+experiment:
+  seed: 42
+  cv_splits: 5
+
+features:
+  use_target_log: true
+  use_hypothesis_checks: true
+
+models:
+  ridge:
+    alpha: 12.0
+  lasso:
+    alpha: 0.0007
+  et:
+    n_estimators: 1200
+    max_depth: 12
+    min_samples_leaf: 2
+    random_state: 42
+  catboost:
+    iterations: 1800
+    learning_rate: 0.03
+    depth: 6
+    loss_function: RMSE
+    random_seed: 42
+
+output:
+  submission_name: submission_baseline.csv
