@@ -39,7 +39,7 @@
 
 1. Сначала открой [docs/kaggle_playbook.md](docs/kaggle_playbook.md): там общий подход к соревнованиям, который применим и к House Prices, и к Titanic.
 2. Затем прочитай [docs/house_prices_rationale.md](docs/house_prices_rationale.md): там объяснены решения именно для этого соревнования.
-3. После этого открой `src/run_pipeline.py`, чтобы связать описание с реальным кодом.
+3. После этого открой `src/main.py` (или `src/run_pipeline.py`), чтобы связать описание с реальным кодом — `src/main.py` — основной алиас для запуска пайплайна.
 
 Далее смотри модули в таком порядке:
 
@@ -88,7 +88,7 @@ pip install -r requirements.txt
 ## Запуск бейзлайна
 
 ```bash
-python src/run_pipeline.py --config configs/default.yaml
+python src/main.py --config configs/default.yaml
 ```
 
 ## Ожидаемые выходные файлы
