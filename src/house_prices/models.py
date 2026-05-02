@@ -22,16 +22,16 @@ except Exception:  # pragma: no cover
 
 
 def make_preprocessor(X):
-    """Build a preprocessing block that handles numeric and categorical columns."""
+    """Собрать блок препроцессинга для числовых и категориальных колонок."""
     categorical = list(X.select_dtypes(include=["object", "category", "string"]).columns)
     numeric = [c for c in X.columns if c not in categorical]
 
-    # Median-impute numeric columns, then standardize for linear models.
+    # Заполняем числовые колонки медианой и затем стандартизируем их для линейных моделей.
     numeric_pipe = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),
     ])
-    # One-hot encode categorical variables while tolerating unseen levels at test time.
+    # Кодируем категориальные признаки one-hot'ом и спокойно переживаем новые уровни на тесте.
     categorical_pipe = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
         ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
@@ -44,7 +44,7 @@ def make_preprocessor(X):
 
 
 def make_models(config: dict, preprocessor) -> dict:
-    """Assemble the model zoo used in the baseline comparison."""
+    """Собрать набор моделей для базового сравнения."""
     models = {
         "ridge": Pipeline([("preprocessor", preprocessor), ("model", Ridge(alpha=float(config["ridge"]["alpha"]))) ]),
         "lasso": Pipeline([("preprocessor", preprocessor), ("model", Lasso(alpha=float(config["lasso"]["alpha"]), max_iter=20000))]),
@@ -95,7 +95,7 @@ def make_models(config: dict, preprocessor) -> dict:
             ),
         ])
 
-    # CatBoost is optional so the project still runs in a lighter environment.
+    # CatBoost сделан опциональным, чтобы проект запускался и в более лёгком окружении.
     if CatBoostRegressor is not None:
         models["catboost"] = Pipeline([
             ("preprocessor", preprocessor),

@@ -23,7 +23,7 @@ from sklearn.metrics import mean_squared_error
 
 
 def main() -> None:
-    """Run the full House Prices experiment end to end."""
+    """Запустить полный эксперимент House Prices от начала до конца."""
     parser = argparse.ArgumentParser(description="House Prices baseline pipeline")
     parser.add_argument("--config", type=str, default="configs/default.yaml")
     args = parser.parse_args()
@@ -32,7 +32,8 @@ def main() -> None:
     data_dir = Path(cfg["paths"]["data_dir"])
     artifact_dir = Path(cfg["paths"]["artifact_dir"])
 
-    # Use shared helper to create artifact dirs and load CSVs consistently.
+    # Используем общие хелперы, чтобы директории артефактов и загрузка CSV
+    # вели себя одинаково во всех точках входа.
     from src.common import make_artifact_dirs, load_train_test
 
     dirs = make_artifact_dirs(artifact_dir)
@@ -44,7 +45,7 @@ def main() -> None:
     models_dir = dirs["models"]
 
     train_df, test_df = load_train_test(data_dir)
-    # Preserve ids before feature building because the feature step removes Id.
+    # Сохраняем Id до генерации признаков, потому что шаг признаков удаляет Id.
     train_ids = train_df["Id"].copy()
     test_ids = test_df["Id"].copy()
     train_df = build_features(train_df)
@@ -74,7 +75,7 @@ def main() -> None:
     )
     blend_weights = tune_blend_weights(oof_pred, y_train, n_trials=25)
 
-    # Save artifacts that let us inspect the run later without rerunning training.
+    # Сохраняем артефакты, чтобы можно было разобрать запуск без повторного обучения.
     oof_metrics_df = compute_oof_metrics(oof_pred, y_train, model_order)
     oof_metrics_df.to_csv(metrics_dir / "oof_model_rmse.csv", index=False)
     save_oof_predictions(oof_pred, model_order, train_ids, pred_dir, prefix="oof")
@@ -84,7 +85,8 @@ def main() -> None:
         model.fit(X_train, y_train)
         test_pred[name] = model.predict(X_test)
 
-    # Save one CSV per model so the blend and future experiments are reproducible.
+    # Сохраняем отдельный CSV для каждой модели, чтобы бленды и будущие
+    # эксперименты было легко воспроизвести.
     save_test_predictions(test_pred, test_ids, pred_dir, prefix="test")
 
     blend_map = {name: weight for name, weight in zip(model_order, blend_weights)}

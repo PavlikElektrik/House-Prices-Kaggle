@@ -1,4 +1,4 @@
-"""Training and evaluation utilities for the House Prices pipeline."""
+"""Утилиты обучения и оценки для пайплайна House Prices."""
 
 from __future__ import annotations
 
@@ -14,7 +14,7 @@ from sklearn.model_selection import KFold, cross_val_score
 
 
 def evaluate_cv(X: pd.DataFrame, y: pd.Series, models: dict, n_splits: int, seed: int) -> pd.DataFrame:
-    """Compute leakage-safe CV scores for each candidate model."""
+    """Посчитать CV-метрики без утечек для каждой кандидатной модели."""
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=seed)
     rows = []
     for name, model in models.items():
@@ -25,7 +25,7 @@ def evaluate_cv(X: pd.DataFrame, y: pd.Series, models: dict, n_splits: int, seed
 
 
 def get_oof_predictions(X: pd.DataFrame, y: pd.Series, models: dict, n_splits: int, seed: int) -> tuple[np.ndarray, list[str]]:
-    """Return out-of-fold predictions for every model in the model zoo."""
+    """Вернуть out-of-fold предсказания для каждой модели из набора."""
     cv = KFold(n_splits=n_splits, shuffle=True, random_state=seed)
     names = list(models.keys())
     oof = np.zeros((len(X), len(names)), dtype=float)
@@ -40,9 +40,9 @@ def get_oof_predictions(X: pd.DataFrame, y: pd.Series, models: dict, n_splits: i
 
 
 def tune_blend_weights(oof_pred: np.ndarray, y: pd.Series, n_trials: int) -> list[float]:
-    """Search for blend weights that minimize OOF RMSE.
+    """Подобрать веса бленда, минимизирующие OOF RMSE.
 
-    Falls back to uniform weights if Optuna is unavailable.
+    Если Optuna недоступна, используем равномерные веса.
     """
     try:
         import optuna
@@ -68,7 +68,7 @@ def tune_blend_weights(oof_pred: np.ndarray, y: pd.Series, n_trials: int) -> lis
 
 
 def weighted_prediction(pred_map: dict[str, np.ndarray], weights_map: dict[str, float]) -> np.ndarray:
-    """Blend model predictions with explicit model-name weights."""
+    """Смешать предсказания моделей по явно заданным весам."""
     arr = None
     for name, weight in weights_map.items():
         part = pred_map[name] * float(weight)
@@ -77,7 +77,7 @@ def weighted_prediction(pred_map: dict[str, np.ndarray], weights_map: dict[str, 
 
 
 def save_submission(pred_log: np.ndarray, passenger_id: pd.Series, out_dir: Path, filename: str) -> Path:
-    """Convert log-price predictions back to price space and save a Kaggle submission."""
+    """Перевести лог-прогнозы обратно в цену и сохранить сабмишен Kaggle."""
     pred = np.expm1(pred_log)
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = out_dir / f"{filename}_{ts}.csv"
@@ -86,7 +86,7 @@ def save_submission(pred_log: np.ndarray, passenger_id: pd.Series, out_dir: Path
 
 
 def compute_oof_metrics(oof_pred: np.ndarray, y: pd.Series, names: list[str]) -> pd.DataFrame:
-    """Summarize per-model OOF RMSE in a tidy table."""
+    """Собрать по каждой модели OOF RMSE в аккуратную таблицу."""
     rows = []
     y_arr = y.values
     for i, name in enumerate(names):
@@ -96,7 +96,7 @@ def compute_oof_metrics(oof_pred: np.ndarray, y: pd.Series, names: list[str]) ->
 
 
 def save_oof_predictions(oof_pred: np.ndarray, names: list[str], ids: pd.Series, out_dir: Path, prefix: str = "oof") -> Path:
-    """Persist OOF predictions so the stack/blend can be audited later."""
+    """Сохранить OOF-предсказания, чтобы бленды и стекинг можно было проверить позже."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     df = pd.DataFrame(oof_pred, columns=names, index=ids.index)
     df.insert(0, "Id", ids.values)
@@ -106,7 +106,7 @@ def save_oof_predictions(oof_pred: np.ndarray, names: list[str], ids: pd.Series,
 
 
 def save_test_predictions(pred_map: dict[str, np.ndarray], ids: pd.Series, out_dir: Path, prefix: str = "test") -> Path:
-    """Persist per-model test predictions for downstream blending and analysis."""
+    """Сохранить тестовые предсказания каждой модели для последующего блендинга и анализа."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     df = pd.DataFrame({"Id": ids.values})
     for name, arr in pred_map.items():
@@ -117,7 +117,7 @@ def save_test_predictions(pred_map: dict[str, np.ndarray], ids: pd.Series, out_d
 
 
 def save_metrics(metrics: dict, out_dir: Path, filename: str = "metrics") -> Path:
-    """Save a small JSON blob with the run-level metrics and summary values."""
+    """Сохранить небольшой JSON с метриками запуска и сводными значениями."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = out_dir / f"{filename}_{ts}.json"
     with open(path, "w", encoding="utf-8") as f:

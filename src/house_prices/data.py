@@ -6,7 +6,7 @@ import pandas as pd
 
 
 def load_data(data_dir: str | Path) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Load the Kaggle train/test CSV files from the data directory."""
+    """Загрузить CSV-файлы train/test Kaggle из папки с данными."""
     data_path = Path(data_dir)
     train_df = pd.read_csv(data_path / "train.csv")
     test_df = pd.read_csv(data_path / "test.csv")
