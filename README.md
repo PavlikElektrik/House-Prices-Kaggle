@@ -53,6 +53,16 @@ Then inspect the core modules in this order:
 
 If you want the experiment outputs, look in `artifacts/` after a run.
 
+## 3. House Prices: постановка задачи и бейзлайн
+
+| Вопрос | Ответ |
+|---|---|
+| Что предсказывается? | `SalePrice` |
+| Тип задачи | Регрессия |
+| Метрика | Ошибка в лог-пространстве, поэтому важны относительные ошибки |
+| Трансформация таргета | `log1p(SalePrice)` (это математическое преобразование: берём натуральный логарифм от `1 + цена`, чтобы уменьшить перекос очень дорогих домов и сделать обучение стабильнее) |
+| Бейзлайн | Ridge, Lasso, ExtraTrees, CatBoost |
+
 ## Install
 
 ```bash
@@ -75,4 +85,4 @@ python src/run_pipeline.py --config configs/default.yaml
 
 ## Notes
 
-The pipeline trains on `log1p(SalePrice)` and uses RMSLE-oriented evaluation. That is the standard shape for this competition, but the code is structured so the feature set and model list can be changed without rewriting the whole project.
+The pipeline trains on `log1p(SalePrice)` (логарифмируем целевую переменную через формулу `ln(1 + x)`, чтобы "сжать" выбросы по очень дорогим домам) and uses RMSLE-oriented evaluation. That is the standard shape for this competition, but the code is structured so the feature set and model list can be changed without rewriting the whole project.
