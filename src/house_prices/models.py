@@ -14,13 +14,16 @@ except Exception:  # pragma: no cover
 
 
 def make_preprocessor(X):
+    """Build a preprocessing block that handles numeric and categorical columns."""
     categorical = [c for c in X.columns if X[c].dtype == "object"]
     numeric = [c for c in X.columns if c not in categorical]
 
+    # Median-impute numeric columns, then standardize for linear models.
     numeric_pipe = Pipeline([
         ("imputer", SimpleImputer(strategy="median")),
         ("scaler", StandardScaler()),
     ])
+    # One-hot encode categorical variables while tolerating unseen levels at test time.
     categorical_pipe = Pipeline([
         ("imputer", SimpleImputer(strategy="most_frequent")),
         ("onehot", OneHotEncoder(handle_unknown="ignore", sparse_output=False)),
@@ -33,6 +36,7 @@ def make_preprocessor(X):
 
 
 def make_models(config: dict, preprocessor) -> dict:
+    """Assemble the model zoo used in the baseline comparison."""
     models = {
         "ridge": Pipeline([("preprocessor", preprocessor), ("model", Ridge(alpha=float(config["ridge"]["alpha"]))) ]),
         "lasso": Pipeline([("preprocessor", preprocessor), ("model", Lasso(alpha=float(config["lasso"]["alpha"]), max_iter=20000))]),
@@ -51,6 +55,7 @@ def make_models(config: dict, preprocessor) -> dict:
         ]),
     }
 
+    # CatBoost is optional so the project still runs in a lighter environment.
     if CatBoostRegressor is not None:
         models["catboost"] = Pipeline([
             ("preprocessor", preprocessor),

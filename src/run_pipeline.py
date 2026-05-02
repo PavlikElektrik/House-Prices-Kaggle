@@ -8,10 +8,22 @@ from house_prices.config import load_config
 from house_prices.data import load_data
 from house_prices.features import build_features, split_target
 from house_prices.models import make_models, make_preprocessor
-from house_prices.training import evaluate_cv, get_oof_predictions, save_submission, tune_blend_weights, weighted_prediction
+from house_prices.training import (
+    evaluate_cv,
+    get_oof_predictions,
+    save_submission,
+    tune_blend_weights,
+    weighted_prediction,
+    compute_oof_metrics,
+    save_oof_predictions,
+    save_test_predictions,
+    save_metrics,
+)
+from sklearn.metrics import mean_squared_error
 
 
 def main() -> None:
+    """Run the full House Prices experiment end to end."""
     parser = argparse.ArgumentParser(description="House Prices baseline pipeline")
     parser.add_argument("--config", type=str, default="configs/default.yaml")
     args = parser.parse_args()
@@ -21,12 +33,20 @@ def main() -> None:
     artifact_dir = Path(cfg["paths"]["artifact_dir"])
     report_dir = artifact_dir / "reports"
     sub_dir = artifact_dir / "submissions"
-    report_dir.mkdir(parents=True, exist_ok=True)
-    sub_dir.mkdir(parents=True, exist_ok=True)
+    pred_dir = artifact_dir / "predictions"
+    metrics_dir = artifact_dir / "metrics"
+    figures_dir = artifact_dir / "figures"
+    models_dir = artifact_dir / "models"
+
+    # Keep the artifact structure explicit so each run leaves a readable audit trail.
+    for p in (report_dir, sub_dir, pred_dir, metrics_dir, figures_dir, models_dir):
+        p.mkdir(parents=True, exist_ok=True)
 
     train_df, test_df = load_data(data_dir)
-    train_df = build_features(train_df)
+    # Preserve ids before feature building because the feature step removes Id.
+    train_ids = train_df["Id"].copy()
     test_ids = test_df["Id"].copy()
+    train_df = build_features(train_df)
     test_df = build_features(test_df)
 
     X_train, y_train = split_target(train_df)
@@ -53,25 +73,40 @@ def main() -> None:
     )
     blend_weights = tune_blend_weights(oof_pred, y_train, n_trials=25)
 
+    # Save artifacts that let us inspect the run later without rerunning training.
+    oof_metrics_df = compute_oof_metrics(oof_pred, y_train, model_order)
+    oof_metrics_df.to_csv(metrics_dir / "oof_model_rmse.csv", index=False)
+    save_oof_predictions(oof_pred, model_order, train_ids, pred_dir, prefix="oof")
+
     test_pred = {}
     for name, model in models.items():
         model.fit(X_train, y_train)
         test_pred[name] = model.predict(X_test)
+
+    # Save one CSV per model so the blend and future experiments are reproducible.
+    save_test_predictions(test_pred, test_ids, pred_dir, prefix="test")
 
     blend_map = {name: weight for name, weight in zip(model_order, blend_weights)}
     blend_pred = weighted_prediction(test_pred, blend_map)
 
     sub_path = save_submission(blend_pred, test_ids, sub_dir, cfg["output"]["submission_name"].replace(".csv", ""))
 
+    import numpy as _np
+    blend_oof = oof_pred @ _np.array(blend_weights)
+    blend_rmse = float(_np.sqrt(mean_squared_error(y_train.values, blend_oof)))
+
     summary = {
         "config_path": str(args.config),
         "model_order": model_order,
         "blend_weights": blend_map,
         "cv_table": cv_df.to_dict(orient="records"),
+        "oof_metrics": oof_metrics_df.to_dict(orient="records"),
+        "blend_oof_rmse": blend_rmse,
         "submission": str(sub_path),
     }
     with open(report_dir / "feature_summary.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, ensure_ascii=False, indent=2)
+    save_metrics({"blend_oof_rmse": blend_rmse}, metrics_dir, filename="blend")
 
     print(cv_df.to_string(index=False))
     print(f"Submission saved to: {sub_path}")

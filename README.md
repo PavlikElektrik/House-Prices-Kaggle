@@ -10,6 +10,17 @@ The goal is to build a clean, repeatable pipeline:
 - hypothesis checks for feature ideas
 - submission file generation
 
+## What this repo demonstrates
+
+This project is written to show the whole Kaggle workflow, not just a leaderboard result.
+The emphasis is on:
+
+- understanding the competition statement first
+- choosing a baseline that is simple, explainable, and hard to break
+- keeping the training loop leakage-safe
+- saving artifacts so every run can be reviewed later
+- documenting why a model and architecture were chosen
+
 ## Why this repo exists
 
 I want a strong baseline that is **normal and reproducible**, not a copied leaderboard solution. The idea is to start from a solid public Kaggle-style workflow, then test hypotheses step by step:
@@ -24,6 +35,23 @@ I want a strong baseline that is **normal and reproducible**, not a copied leade
 - `configs/` - YAML configs for experiments
 - `src/house_prices/` - reusable package code
 - `artifacts/` - reports, metrics, and submission files
+
+## How to read the project
+
+Start with [docs/kaggle_playbook.md](docs/kaggle_playbook.md) to see the competition workflow that applies to House Prices and can be reused for Titanic.
+
+Then read [docs/house_prices_rationale.md](docs/house_prices_rationale.md) for the competition-specific reasoning.
+
+After that, inspect `src/run_pipeline.py` to connect the narrative to the code.
+
+Then inspect the core modules in this order:
+
+- `src/house_prices/data.py` - dataset loading
+- `src/house_prices/features.py` - feature engineering and target split
+- `src/house_prices/models.py` - preprocessing and model zoo
+- `src/house_prices/training.py` - CV, OOF, blending, and artifact saving
+
+If you want the experiment outputs, look in `artifacts/` after a run.
 
 ## Install
 
@@ -41,6 +69,8 @@ python src/run_pipeline.py --config configs/default.yaml
 
 - `artifacts/reports/cv_scores.csv`
 - `artifacts/reports/feature_summary.json`
+- `artifacts/metrics/*.json`
+- `artifacts/predictions/*.csv`
 - `artifacts/submissions/submission_*.csv`
 
 ## Notes
