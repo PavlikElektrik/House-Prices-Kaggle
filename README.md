@@ -1,57 +1,56 @@
 # House Prices - Advanced Regression Techniques
 
-This repository is a separate Kaggle project for **House Prices - Advanced Regression Techniques**.
+Этот репозиторий содержит отдельный Kaggle-проект для соревнования **House Prices - Advanced Regression Techniques**.
 
-The goal is to build a clean, repeatable pipeline:
-- data loading and validation
-- feature engineering
-- leakage-safe cross-validation
-- baseline models and model comparison
-- hypothesis checks for feature ideas
-- submission file generation
+Цель проекта: собрать чистый и воспроизводимый пайплайн, в котором есть:
+- загрузка и проверка данных
+- генерация признаков
+- кросс-валидация без утечек
+- базовые модели и их сравнение
+- проверка гипотез по признакам
+- формирование submission-файла
 
-## What this repo demonstrates
+## Что показывает этот репозиторий
 
-This project is written to show the whole Kaggle workflow, not just a leaderboard result.
-The emphasis is on:
+Проект сделан так, чтобы показать полный рабочий процесс Kaggle, а не только итоговое место в таблице.
+Фокус на следующем:
 
-- understanding the competition statement first
-- choosing a baseline that is simple, explainable, and hard to break
-- keeping the training loop leakage-safe
-- saving artifacts so every run can be reviewed later
-- documenting why a model and architecture were chosen
+- сначала понять постановку задачи соревнования
+- выбрать бейзлайн, который простой, объяснимый и устойчивый
+- не допускать утечек в обучении и валидации
+- сохранять артефакты, чтобы каждый запуск можно было разобрать позже
+- фиксировать, почему выбраны именно такие модельные и архитектурные решения
 
-## Why this repo exists
+## Зачем создан этот проект
 
-I want a strong baseline that is **normal and reproducible**, not a copied leaderboard solution. The idea is to start from a solid public Kaggle-style workflow, then test hypotheses step by step:
-- which house-quality features matter most
-- whether log-transforming the target helps
-- which categorical encodings are stable
-- whether a small blend beats a single model
+Задача была собрать сильный и **воспроизводимый** бейзлайн, а не копию чужого решения из лидерборда.
+Подход такой: берём надёжный Kaggle-шаблон и по шагам проверяем гипотезы:
+- какие признаки качества дома реально важны
+- помогает ли логарифмирование таргета
+- какие кодировки категориальных признаков стабильнее
+- когда небольшой бленд лучше одиночной модели
 
-## Project layout
+## Структура проекта
 
-- `data/` - place `train.csv` and `test.csv` here
-- `configs/` - YAML configs for experiments
-- `src/house_prices/` - reusable package code
-- `artifacts/` - reports, metrics, and submission files
+- `data/` - сюда кладутся `train.csv` и `test.csv`
+- `configs/` - YAML-конфиги экспериментов
+- `src/house_prices/` - переиспользуемый код проекта
+- `artifacts/` - отчёты, метрики и submission-файлы
 
-## How to read the project
+## Как читать проект
 
-Start with [docs/kaggle_playbook.md](docs/kaggle_playbook.md) to see the competition workflow that applies to House Prices and can be reused for Titanic.
+1. Сначала открой [docs/kaggle_playbook.md](docs/kaggle_playbook.md): там общий подход к соревнованиям, который применим и к House Prices, и к Titanic.
+2. Затем прочитай [docs/house_prices_rationale.md](docs/house_prices_rationale.md): там объяснены решения именно для этого соревнования.
+3. После этого открой `src/run_pipeline.py`, чтобы связать описание с реальным кодом.
 
-Then read [docs/house_prices_rationale.md](docs/house_prices_rationale.md) for the competition-specific reasoning.
+Далее смотри модули в таком порядке:
 
-After that, inspect `src/run_pipeline.py` to connect the narrative to the code.
+- `src/house_prices/data.py` - загрузка датасета
+- `src/house_prices/features.py` - генерация признаков и выделение таргета
+- `src/house_prices/models.py` - препроцессинг и набор моделей
+- `src/house_prices/training.py` - CV, OOF, блендинг и сохранение артефактов
 
-Then inspect the core modules in this order:
-
-- `src/house_prices/data.py` - dataset loading
-- `src/house_prices/features.py` - feature engineering and target split
-- `src/house_prices/models.py` - preprocessing and model zoo
-- `src/house_prices/training.py` - CV, OOF, blending, and artifact saving
-
-If you want the experiment outputs, look in `artifacts/` after a run.
+Результаты экспериментов сохраняются в `artifacts/`.
 
 ## 3. House Prices: постановка задачи и бейзлайн
 
@@ -77,19 +76,19 @@ If you want the experiment outputs, look in `artifacts/` after a run.
 | OOF RMSE (log), CatBoost | 0.123218 |
 | OOF RMSE (log), Blend | 0.124405 |
 
-## Install
+## Установка
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run baseline
+## Запуск бейзлайна
 
 ```bash
 python src/run_pipeline.py --config configs/default.yaml
 ```
 
-## Expected outputs
+## Ожидаемые выходные файлы
 
 - `artifacts/reports/cv_scores.csv`
 - `artifacts/reports/feature_summary.json`
@@ -97,6 +96,6 @@ python src/run_pipeline.py --config configs/default.yaml
 - `artifacts/predictions/*.csv`
 - `artifacts/submissions/submission_*.csv`
 
-## Notes
+## Примечания
 
-The pipeline trains on `log1p(SalePrice)` (логарифмируем целевую переменную через формулу `ln(1 + x)`, чтобы "сжать" выбросы по очень дорогим домам) and uses RMSLE-oriented evaluation. That is the standard shape for this competition, but the code is structured so the feature set and model list can be changed without rewriting the whole project.
+Пайплайн обучается на `log1p(SalePrice)` (логарифмируем целевую переменную через формулу `ln(1 + x)`, чтобы "сжать" выбросы по очень дорогим домам) и оценивается метрикой, ориентированной на RMSLE. Для этого соревнования это стандартный и практичный подход. При этом структура кода позволяет менять набор признаков и моделей без переписывания всего проекта.
