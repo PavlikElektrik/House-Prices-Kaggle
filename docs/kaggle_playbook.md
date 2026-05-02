@@ -1,72 +1,78 @@
 # Kaggle Playbook
 
-This is the workflow I use for both House Prices and Titanic.
-The idea is to make the solution understandable for me, for a reviewer, and for future iterations.
+Это рабочий шаблон, который я использую и для House Prices, и для Titanic.
+Идея в том, чтобы решение было понятно мне, проверяющему и мне же через несколько итераций.
 
-## 1. Start with the problem statement
+## 1. Сначала формулирую постановку задачи
 
-| Question | What to answer |
+| Вопрос | Что нужно ответить |
 |---|---|
-| What is being predicted? | Target definition and format of submission |
-| What metric is used? | How model quality is measured |
-| What can leak? | Which columns, splits, or transformations can accidentally use future information |
-| What is the data shape? | Tabular, mixed types, class imbalance, missingness |
+| Что предсказывается? | Какой таргет и в каком формате нужен submission |
+| Какая метрика? | Как измеряется качество модели |
+| Где возможна утечка? | Какие колонки, разбиения или преобразования могут случайно подсмотреть будущее |
+| Какой тип данных? | Табличные данные, смешанные типы, дисбаланс классов, пропуски |
 
-## 2. Keep a working notebook or markdown log
+## 2. Веду рабочий notebook или markdown-лог
 
-| Section | Purpose |
+| Раздел | Зачем он нужен |
 |---|---|
-| To-do | What I need to test next |
-| Notes | Facts about the data and competition |
-| Questions | Open hypotheses that still need checking |
-| Solution | Only the parts that improved the score |
-| Annotations | Why a decision was made |
-| Final ensemble | Which models were kept and how they were combined |
-| Processed ideas | What was tried and rejected |
+| To-do | Что нужно проверить дальше |
+| Notes | Факты о данных и соревновании |
+| Questions | Открытые гипотезы, которые ещё надо проверить |
+| Solution | Только те шаги, которые реально улучшили скор |
+| Annotations | Почему принято то или иное решение |
+| Final ensemble | Какие модели оставил и как их объединил |
+| Processed ideas | Что пробовал и почему отказался |
 
-## 3. Choose the baseline by the competition type
+## 3. Выбираю бейзлайн по типу соревнования
 
-| Competition type | Good first baseline | Why it is a good baseline |
+| Тип соревнования | Хороший первый бейзлайн | Почему это хороший старт |
 |---|---|---|
-| House Prices | Ridge/Lasso + robust preprocessing | Tabular regression, many correlated features, easy to explain, stable under CV |
-| Titanic | Logistic Regression or Random Forest + basic preprocessing | Binary classification, small dataset, baseline is fast and easy to interpret |
+| House Prices | Ridge/Lasso + устойчивый препроцессинг | Табличная регрессия, много коррелирующих признаков, легко объяснить, стабильно на CV |
+| Titanic | Logistic Regression или Random Forest + базовый препроцессинг | Бинарная классификация, маленький датасет, бейзлайн быстрый и понятный |
 
-The baseline should not be the fanciest model. It should be the model that answers the most questions with the least ambiguity.
+Бейзлайн нужен не для красоты. Он нужен, чтобы быстро ответить на три вопроса:
 
-## 4. Build the architecture around explanation, not just score
+| Вопрос | Что отвечает бейзлайн |
+|---|---|
+| Пайплайн вообще работает? | Да или нет |
+| Есть ли сигнал в данных? | Да или нет |
+| Где копать дальше? | В фичи, модель, обработку пропусков, блендинг |
 
-| Layer | What it does | Why it exists |
+## 4. Строю архитектуру вокруг объяснимости, а не только вокруг скоринга
+
+| Слой | Что делает | Зачем он нужен |
 |---|---|---|
-| `data.py` | Load raw CSV files | Keeps I/O separate from modeling |
-| `features.py` | Build features and split target | Makes feature logic testable |
-| `models.py` | Preprocessing and model zoo | Central place for model choice |
-| `training.py` | CV, OOF, blend, export | Makes evaluation repeatable |
-| `run_pipeline.py` | One end-to-end entry point | Gives a reviewer the shortest path through the project |
+| `data.py` | Загружает сырые CSV-файлы | Отделяет I/O от логики |
+| `features.py` | Строит признаки и выделяет таргет | Легче тестировать и менять |
+| `models.py` | Хранит preprocessing и набор моделей | Сразу видно, что именно сравнивается |
+| `training.py` | CV, OOF, blending, export | Даёт одинаковую оценку всем кандидатам |
+| `run_pipeline.py` | Одна точка входа | Проверяющему не нужно искать, откуда запускать проект |
 
-## 5. Decide when a model is good enough
+## 5. Решаю, когда модель уже достаточно хороша
 
-I keep a model only if it satisfies all three:
+Модель я оставляю только если выполняются все три условия:
 
-| Check | Meaning |
+| Проверка | Что означает |
 |---|---|
-| Score is better | It improves the metric |
-| Behavior is stable | It does not depend on one lucky split |
-| Explanation is clean | I can explain why it helps |
+| Скор лучше | Метрика действительно улучшилась |
+| Поведение стабильно | Результат не держится на одном удачном сплите |
+| Объяснение чистое | Я могу понятно объяснить, почему это работает |
 
-## 6. How to adapt this playbook to Titanic
+## 6. Как этот playbook переносится на Titanic
 
-| Step | Titanic version |
+| Шаг | Вариант для Titanic |
 |---|---|
-| Problem | Predict survival probability or class |
-| Baseline | Logistic Regression with simple imputing and encoding |
-| Features | Title from name, family size, cabin indicator, ticket group |
-| Validation | Stratified CV |
-| Interpretation | Focus on class imbalance, missing data, and leakage risk |
+| Постановка | Предсказать вероятность выживания или класс |
+| Бейзлайн | Logistic Regression с простым заполнением пропусков и кодированием |
+| Признаки | Title из имени, размер семьи, признак каюты, группа по билету |
+| Валидация | Stratified CV |
+| Интерпретация | Смотрю на дисбаланс классов, пропуски и риск утечки |
 
-## 7. What a reviewer should see
+## 7. Что должен увидеть проверяющий
 
-The reviewer should be able to answer three questions from the repo alone:
+Проверяющий должен уметь ответить на три вопроса прямо из репозитория:
 
-1. What is the competition asking?
-2. Why was this baseline chosen?
-3. Why does the architecture make the experiment easier to trust and extend?
+1. Что вообще просит соревнование?
+2. Почему выбран именно такой бейзлайн?
+3. Почему архитектура делает эксперимент более доверенным и удобным для развития?
