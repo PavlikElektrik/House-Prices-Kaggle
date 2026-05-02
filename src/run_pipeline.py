@@ -4,11 +4,11 @@ import argparse
 import json
 from pathlib import Path
 
-from house_prices.config import load_config
-from house_prices.data import load_data
-from house_prices.features import build_features, split_target
-from house_prices.models import make_models, make_preprocessor
-from house_prices.training import (
+from src.house_prices.config import load_config
+from src.house_prices.data import load_data
+from src.house_prices.features import build_features, split_target
+from src.house_prices.models import make_models, make_preprocessor
+from src.house_prices.training import (
     evaluate_cv,
     get_oof_predictions,
     save_submission,
@@ -31,18 +31,19 @@ def main() -> None:
     cfg = load_config(args.config)
     data_dir = Path(cfg["paths"]["data_dir"])
     artifact_dir = Path(cfg["paths"]["artifact_dir"])
-    report_dir = artifact_dir / "reports"
-    sub_dir = artifact_dir / "submissions"
-    pred_dir = artifact_dir / "predictions"
-    metrics_dir = artifact_dir / "metrics"
-    figures_dir = artifact_dir / "figures"
-    models_dir = artifact_dir / "models"
 
-    # Keep the artifact structure explicit so each run leaves a readable audit trail.
-    for p in (report_dir, sub_dir, pred_dir, metrics_dir, figures_dir, models_dir):
-        p.mkdir(parents=True, exist_ok=True)
+    # Use shared helper to create artifact dirs and load CSVs consistently.
+    from src.common import make_artifact_dirs, load_train_test
 
-    train_df, test_df = load_data(data_dir)
+    dirs = make_artifact_dirs(artifact_dir)
+    report_dir = dirs["reports"]
+    sub_dir = dirs["submissions"]
+    pred_dir = dirs["predictions"]
+    metrics_dir = dirs["metrics"]
+    figures_dir = dirs["figures"]
+    models_dir = dirs["models"]
+
+    train_df, test_df = load_train_test(data_dir)
     # Preserve ids before feature building because the feature step removes Id.
     train_ids = train_df["Id"].copy()
     test_ids = test_df["Id"].copy()

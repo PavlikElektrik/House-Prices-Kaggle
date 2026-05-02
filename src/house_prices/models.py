@@ -8,7 +8,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
-from torch_models import TorchRegressor
+from src.torch_models import TorchRegressor
 
 try:
     from xgboost import XGBRegressor
