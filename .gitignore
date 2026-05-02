@@ -7,3 +7,4 @@ venv/
 artifacts/
 data/
 .DS_Store
+catboost_info/
