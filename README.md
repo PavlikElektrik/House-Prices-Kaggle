@@ -63,6 +63,20 @@ If you want the experiment outputs, look in `artifacts/` after a run.
 | Трансформация таргета | `log1p(SalePrice)` (это математическое преобразование: берём натуральный логарифм от `1 + цена`, чтобы уменьшить перекос очень дорогих домов и сделать обучение стабильнее) |
 | Бейзлайн | Ridge, Lasso, ExtraTrees, CatBoost |
 
+## 4. House Prices: метрики
+
+| Модель | CV RMSE (log), mean | CV RMSE (log), std |
+|---|---:|---:|
+| CatBoost | 0.121959 | 0.017565 |
+| ExtraTrees | 0.138385 | 0.014425 |
+| Lasso | 0.143748 | 0.040411 |
+| Ridge | 0.144292 | 0.039145 |
+
+| Дополнительно | Значение |
+|---|---:|
+| OOF RMSE (log), CatBoost | 0.123218 |
+| OOF RMSE (log), Blend | 0.124405 |
+
 ## Install
 
 ```bash
