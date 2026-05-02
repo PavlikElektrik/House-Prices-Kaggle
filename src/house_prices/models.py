@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import ExtraTreesRegressor
+from sklearn.ensemble import ExtraTreesRegressor, HistGradientBoostingRegressor
 from sklearn.impute import SimpleImputer
 from sklearn.linear_model import Lasso, Ridge
 from sklearn.pipeline import Pipeline
+from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
 try:
@@ -53,6 +54,19 @@ def make_models(config: dict, preprocessor) -> dict:
                 ),
             ),
         ]),
+        "hgb": Pipeline([
+            ("preprocessor", preprocessor),
+            (
+                "model",
+                HistGradientBoostingRegressor(
+                    learning_rate=float(config["hgb"]["learning_rate"]),
+                    max_depth=int(config["hgb"]["max_depth"]),
+                    max_iter=int(config["hgb"]["max_iter"]),
+                    min_samples_leaf=int(config["hgb"]["min_samples_leaf"]),
+                    random_state=int(config["hgb"]["random_state"]),
+                ),
+            ),
+        ]),
     }
 
     # CatBoost is optional so the project still runs in a lighter environment.
@@ -71,5 +85,22 @@ def make_models(config: dict, preprocessor) -> dict:
                 ),
             ),
         ])
+
+    models["mlp"] = Pipeline([
+        ("preprocessor", preprocessor),
+        (
+            "model",
+            MLPRegressor(
+                hidden_layer_sizes=tuple(config["mlp"]["hidden_layer_sizes"]),
+                activation="relu",
+                alpha=float(config["mlp"]["alpha"]),
+                learning_rate_init=float(config["mlp"]["learning_rate_init"]),
+                max_iter=int(config["mlp"]["max_iter"]),
+                early_stopping=True,
+                n_iter_no_change=int(config["mlp"]["n_iter_no_change"]),
+                random_state=int(config["mlp"]["random_state"]),
+            ),
+        ),
+    ])
 
     return models
