@@ -59,8 +59,7 @@
 | Метрика | Ошибка в лог-пространстве, поэтому важны относительные ошибки |
 | Трансформация таргета | `log1p(SalePrice)` (это математическое преобразование: берём натуральный логарифм от `1 + цена`, чтобы уменьшить перекос очень дорогих домов и сделать обучение стабильнее) |
 | Бейзлайн | Ridge, Lasso, ExtraTrees, CatBoost |
-| Бейзлайн | Ridge, Lasso, ExtraTrees, CatBoost |
-| Доп. кандидаты | HistGradientBoosting, MLPRegressor |
+| Доп. кандидаты | XGBoost, HistGradientBoosting, Torch MLP |
 
 ## 4. House Prices: метрики
 

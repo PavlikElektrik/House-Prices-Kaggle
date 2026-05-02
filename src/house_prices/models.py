@@ -8,6 +8,13 @@ from sklearn.pipeline import Pipeline
 from sklearn.neural_network import MLPRegressor
 from sklearn.preprocessing import OneHotEncoder, StandardScaler
 
+from torch_models import TorchRegressor
+
+try:
+    from xgboost import XGBRegressor
+except Exception:  # pragma: no cover
+    XGBRegressor = None
+
 try:
     from catboost import CatBoostRegressor
 except Exception:  # pragma: no cover
@@ -16,7 +23,7 @@ except Exception:  # pragma: no cover
 
 def make_preprocessor(X):
     """Build a preprocessing block that handles numeric and categorical columns."""
-    categorical = [c for c in X.columns if X[c].dtype == "object"]
+    categorical = list(X.select_dtypes(include=["object", "category", "string"]).columns)
     numeric = [c for c in X.columns if c not in categorical]
 
     # Median-impute numeric columns, then standardize for linear models.
@@ -69,6 +76,25 @@ def make_models(config: dict, preprocessor) -> dict:
         ]),
     }
 
+    if XGBRegressor is not None:
+        models["xgb"] = Pipeline([
+            ("preprocessor", preprocessor),
+            (
+                "model",
+                XGBRegressor(
+                    objective="reg:squarederror",
+                    random_state=int(config["xgb"]["random_state"]),
+                    n_estimators=int(config["xgb"]["n_estimators"]),
+                    max_depth=int(config["xgb"]["max_depth"]),
+                    learning_rate=float(config["xgb"]["learning_rate"]),
+                    subsample=float(config["xgb"]["subsample"]),
+                    colsample_bytree=float(config["xgb"]["colsample_bytree"]),
+                    reg_lambda=float(config["xgb"]["reg_lambda"]),
+                    n_jobs=-1,
+                ),
+            ),
+        ])
+
     # CatBoost is optional so the project still runs in a lighter environment.
     if CatBoostRegressor is not None:
         models["catboost"] = Pipeline([
@@ -99,6 +125,24 @@ def make_models(config: dict, preprocessor) -> dict:
                 early_stopping=True,
                 n_iter_no_change=int(config["mlp"]["n_iter_no_change"]),
                 random_state=int(config["mlp"]["random_state"]),
+            ),
+        ),
+    ])
+
+    models["torch"] = Pipeline([
+        ("preprocessor", preprocessor),
+        (
+            "model",
+            TorchRegressor(
+                hidden_layers=tuple(config["torch"]["hidden_layers"]),
+                dropout=float(config["torch"]["dropout"]),
+                learning_rate=float(config["torch"]["learning_rate"]),
+                weight_decay=float(config["torch"]["weight_decay"]),
+                batch_size=int(config["torch"]["batch_size"]),
+                max_epochs=int(config["torch"]["max_epochs"]),
+                patience=int(config["torch"]["patience"]),
+                val_fraction=float(config["torch"]["val_fraction"]),
+                random_state=int(config["torch"]["random_state"]),
             ),
         ),
     ])
