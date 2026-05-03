@@ -64,16 +64,16 @@
 ## 4. House Prices: метрики
 
 
-| Модель | CV RMSE (log), mean | CV RMSE (log), std |
-|---|---:|---:|
-| CatBoost | 0.122793 | 0.012731 |
-| XGBoost | 0.132879 | 0.015036 |
-| HistGradientBoosting | 0.135483 | 0.013483 |
-| ExtraTrees | 0.139708 | 0.011576 |
-| Lasso | 0.143547 | 0.031133 |
-| Ridge | 0.147172 | 0.028430 |
-| Torch MLP | 0.269815 | 0.032569 |
-| sklearn MLP | 0.314119 | 0.052039 |
+| Модель | CV RMSE (log) |
+|---|---:|
+| CatBoost | 0.123 ± 0.013 |
+| XGBoost | 0.133 ± 0.015 |
+| HistGradientBoosting | 0.135 ± 0.013 |
+| ExtraTrees | 0.140 ± 0.012 |
+| Lasso | 0.144 ± 0.031 |
+| Ridge | 0.147 ± 0.028 |
+| Torch MLP | 0.270 ± 0.033 |
+| sklearn MLP | 0.314 ± 0.052 |
 
 | Дополнительно | Значение |
 |---|---:|
