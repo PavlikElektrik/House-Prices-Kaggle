@@ -5,6 +5,5 @@ __pycache__/
 venv/
 *.pyc
 artifacts/
-data/
 .DS_Store
 catboost_info/
